@@ -87,8 +87,30 @@ The project includes a ready-made automated GNU `Makefile`.
 ### 🚀 С чего начать
 #### 📋 Предварительные требования (Fedora Linux)
 Убедитесь, что в вашей системе установлены инструменты сборки `g++` и пакет разработки `SFML`.
+
+* Fedora, Red Hat Enterprise Linux, CentOS Stream, Rocky Linux, AlmaLinux, Oracle Linux, РЕД ОС:
 ```bash
 sudo dnf install gcc-c++ SFML-devel
+```
+
+* Ubuntu / Debian / Linux Mint / Pop!_OS:
+```bash
+sudo apt update && sudo apt install build-essential libsfml-dev
+```
+
+* Arch Linux / Manjaro / EndeavourOS:
+```bash
+sudo pacman -S gcc sfml
+```
+
+* openSUSE:
+```bash
+sudo zypper install gcc-c++ SFML-devel
+```
+
+* macOS
+```bash
+brew install gcc sfml
 ```
 
 #### 📂 Структура файлов проекта
