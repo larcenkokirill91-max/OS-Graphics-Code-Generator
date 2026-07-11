@@ -68,31 +68,32 @@ private:
         int start_x_bound = (center_x >= rad) ? (center_x - rad) : 0;
         int end_x_bound = std::min((int)CANVAS_WIDTH - 1, center_x + rad);
 
-        int rad_scaled = rad * 256;
-        int rad_sq_scaled = rad_scaled * rad_scaled;
+        // Используем long long (int64_t) для предотвращения переполнения при возведении в квадрат
+        long long rad_scaled = (long long)rad * 256;
+        long long rad_sq_scaled = rad_scaled * rad_scaled;
 
         for (int cur_y = start_y; cur_y <= end_y; cur_y++) {
-            int dy = (cur_y > center_y) ? (cur_y - center_y) : (center_y - cur_y);
-            int dy_scaled = dy * 256;
-            int dy_sq = dy_scaled * dy_scaled;
+            long long dy = (cur_y > center_y) ? (cur_y - center_y) : (center_y - cur_y);
+            long long dy_scaled = dy * 256;
+            long long dy_sq = dy_scaled * dy_scaled;
 
             for (int cur_x = start_x_bound; cur_x <= end_x_bound; cur_x++) {
-                int dx = (cur_x > center_x) ? (cur_x - center_x) : (center_x - cur_x);
-                int dx_scaled = dx * 256;
-                int dist_sq = (dx_scaled * dx_scaled) + dy_sq;
+                long long dx = (cur_x > center_x) ? (cur_x - center_x) : (center_x - cur_x);
+                long long dx_scaled = dx * 256;
+                long long dist_sq = (dx_scaled * dx_scaled) + dy_sq;
 
                 if (dist_sq <= rad_sq_scaled) {
-                    int dist = 0;
+                    long long dist = 0;
                     while ((dist + 1) * (dist + 1) <= dist_sq) {
                         dist++;
                     }
 
-                    int inner_edge = rad_scaled - 256;
+                    long long inner_edge = rad_scaled - 256;
                     sf::Color src_color = color;
 
                     if (dist > inner_edge) {
-                        int edge_dist = dist - inner_edge;
-                        int alpha_factor = 256 - edge_dist;
+                        long long edge_dist = dist - inner_edge;
+                        long long alpha_factor = 256 - edge_dist;
                         src_color.a = (color.a * alpha_factor) >> 8;
                     }
 
