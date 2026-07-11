@@ -14,6 +14,7 @@ enum Tool { RECTANGLE, CIRCLE };
 struct ShapeData {
     Tool type;
     int x1, y1, x2, y2;
+    int thickness; // 0 - сплошная, >0 - толщина обводки
     sf::Color color;
     std::string c_code;
 };
@@ -27,14 +28,28 @@ private:
             int y = std::min(shape.y1, shape.y2);
             int w = std::abs(shape.x1 - shape.x2);
             int h = std::abs(shape.y1 - shape.y2);
+            
             ss << "draw_rect(" << x << ", " << y << ", " << w << ", " << h << ", "
                << (int)shape.color.r << ", " << (int)shape.color.g << ", " << (int)shape.color.b << ", " << (int)shape.color.a << ");";
+               
+            // Если есть толщина контура, генерируем вырез цвета фона
+            if (shape.thickness > 0 && w > shape.thickness * 2 && h > shape.thickness * 2) {
+                ss << "\n    draw_rect(" << x + shape.thickness << ", " << y + shape.thickness << ", " 
+                   << w - shape.thickness * 2 << ", " << h - shape.thickness * 2 << ", 240, 240, 240, 255);";
+            }
         } else if (shape.type == CIRCLE) {
             int center_x = (shape.x1 + shape.x2) / 2;
             int center_y = (shape.y1 + shape.y2) / 2;
             int rad = (std::abs(shape.x1 - shape.x2) + std::abs(shape.y1 - shape.y2)) / 4;
+            
             ss << "draw_circle(" << center_x << ", " << center_y << ", " << rad << ", "
                << (int)shape.color.r << ", " << (int)shape.color.g << ", " << (int)shape.color.b << ", " << (int)shape.color.a << ");";
+               
+            // Если есть толщина контура, генерируем внутренний вырез радиусом поменьше
+            if (shape.thickness > 0 && rad > shape.thickness) {
+                ss << "\n    draw_circle(" << center_x << ", " << center_y << ", " 
+                   << rad - shape.thickness << ", 240, 240, 240, 255);";
+            }
         }
         return ss.str();
     }
@@ -68,7 +83,6 @@ private:
         int start_x_bound = (center_x >= rad) ? (center_x - rad) : 0;
         int end_x_bound = std::min((int)CANVAS_WIDTH - 1, center_x + rad);
 
-        // Используем long long (int64_t) для предотвращения переполнения при возведении в квадрат
         long long rad_scaled = (long long)rad * 256;
         long long rad_sq_scaled = rad_scaled * rad_scaled;
 
@@ -115,9 +129,11 @@ private:
 public:
     std::vector<ShapeData> shapes_history;
     sf::Uint8* canvas_pixels;
+    int current_thickness; // Сюда будем привязывать новый ползунок из GUI
 
     OsVectorEditor() {
         canvas_pixels = new sf::Uint8[CANVAS_WIDTH * CANVAS_HEIGHT * 4];
+        current_thickness = 0; // По умолчанию фигуры сплошные
         clear();
     }
 
@@ -132,6 +148,7 @@ public:
         new_shape.y1 = y1;
         new_shape.x2 = x2;
         new_shape.y2 = y2;
+        new_shape.thickness = current_thickness;
         new_shape.color = color;
         new_shape.c_code = generate_shape_c_code(new_shape);
 
@@ -140,7 +157,6 @@ public:
     }
 
     void redraw_all() {
-        // Заполняем фон текстуры дефолтным серым цветом #F0F0F0, полностью обнуляя альфу для прозрачного блендинга
         for (unsigned int i = 0; i < CANVAS_WIDTH * CANVAS_HEIGHT * 4; i += 4) {
             canvas_pixels[i]     = 240;
             canvas_pixels[i + 1] = 240;
@@ -149,17 +165,32 @@ public:
         }
 
         for (const auto& shape : shapes_history) {
+            // 1. Рисуем внешнюю сплошную фигуру
             if (shape.type == RECTANGLE) {
                 draw_rect_fast(canvas_pixels, shape.x1, shape.y1, shape.x2, shape.y2, shape.color);
+                
+                // Если задана толщина контура, поверх накладываем вырез цвета фона #F0F0F0
+                int w = std::abs(shape.x1 - shape.x2);
+                int h = std::abs(shape.y1 - shape.y2);
+                if (shape.thickness > 0 && w > shape.thickness * 2 && h > shape.thickness * 2) {
+                    int x = std::min(shape.x1, shape.x2);
+                    int y = std::min(shape.y1, shape.y2);
+                    draw_rect_fast(canvas_pixels, x + shape.thickness, y + shape.thickness, 
+                                   x + w - shape.thickness, y + h - shape.thickness, sf::Color(240, 240, 240, 255));
+                }
             } else if (shape.type == CIRCLE) {
                 int center_x = (shape.x1 + shape.x2) / 2;
                 int center_y = (shape.y1 + shape.y2) / 2;
                 int rad = (std::abs(shape.x1 - shape.x2) + std::abs(shape.y1 - shape.y2)) / 4;
                 draw_aa_circle_fast(canvas_pixels, center_x, center_y, rad, shape.color);
+                
+                // Если задана толщина, накладываем сглаженный внутренний вырез цвета фона
+                if (shape.thickness > 0 && rad > shape.thickness) {
+                    draw_aa_circle_fast(canvas_pixels, center_x, center_y, rad - shape.thickness, sf::Color(240, 240, 240, 255));
+                }
             }
         }
 
-        // Накладываем итоговый буфер на непрозрачную подложку, чтобы SFML корректно отображал окно
         for (unsigned int i = 0; i < CANVAS_WIDTH * CANVAS_HEIGHT * 4; i += 4) {
             if (canvas_pixels[i + 3] < 255) {
                 float alpha = canvas_pixels[i + 3] / 255.0f;

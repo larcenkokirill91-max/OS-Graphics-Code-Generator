@@ -3,7 +3,11 @@
 #include "gui_elements.hpp"  // Элементы интерфейса (Слайдеры и Кнопки)
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1600, 1024), "OS Graphics Code Generator (C++ Speed Edition)");
+    // Включаем аппаратное сглаживание (Anti-Aliasing) уровня 4x MSAA для оконных элементов
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 4;
+
+    sf::RenderWindow window(sf::VideoMode(1600, 1024), "OS Graphics Code Generator (C++ Speed Edition)", sf::Style::Default, settings);
     window.setFramerateLimit(60);
 
     OsVectorEditor editor;
@@ -20,34 +24,34 @@ int main() {
     int mouse_start_x = 0, mouse_start_y = 0;
     int mouse_curr_x = 0, mouse_curr_y = 0;
 
-    // Загружаем ваш локальный шрифт из указанной папки
+    // Загружаем локальный шрифт из вашей папки
     sf::Font font;
     if (!font.loadFromFile("JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf")) {
-        // Запасной вариант на всякий случай, если папка называется иначе
         font.loadFromFile("JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf");
     }
 
-    // Инициализация элементов интерфейса из gui_elements.hpp
-    Slider sliderR, sliderG, sliderB, sliderA;
+    // Инициализация элементов интерфейса
+    Slider sliderR, sliderG, sliderB, sliderA, sliderT;
     sliderR.init(1320.f, 200.f, 240.f, 0, 255, &color_R, "Red (R)", sf::Color::Red);
     sliderG.init(1320.f, 250.f, 240.f, 0, 255, &color_G, "Green (G)", sf::Color::Green);
     sliderB.init(1320.f, 300.f, 240.f, 0, 255, &color_B, "Blue (B)", sf::Color::Blue);
     sliderA.init(1320.f, 350.f, 240.f, 0, 255, &color_A, "Alpha", sf::Color(100, 100, 100));
+    sliderT.init(1320.f, 400.f, 240.f, 0, 100, &editor.current_thickness, "Thickness", sf::Color(150, 150, 150));
 
     Button btnRect, btnCircle, btnUndo, btnClear;
     btnRect.init(1320.f, 50.f, 115.f, 35.f, "Rectangle", font);
     btnCircle.init(1445.f, 50.f, 115.f, 35.f, "Circle", font);
-    btnUndo.init(1320.f, 430.f, 115.f, 35.f, "Undo", font);
-    btnClear.init(1445.f, 430.f, 115.f, 35.f, "Clear", font);
+    btnUndo.init(1320.f, 480.f, 115.f, 35.f, "Undo", font);
+    btnClear.init(1445.f, 480.f, 115.f, 35.f, "Clear", font);
 
     sf::RectangleShape color_preview_box(sf::Vector2f(240.f, 30.f));
     color_preview_box.setPosition(1320.f, 120.f);
     color_preview_box.setOutlineColor(sf::Color::Black);
     color_preview_box.setOutlineThickness(1.f);
 
-    // Массив из 4 отдельных текстовых объектов для подписей слайдеров
-    sf::Text textLabels[4];
-    for(int i = 0; i < 4; ++i) {
+    // Массив из 5 отдельных текстовых объектов для подписей слайдеров
+    sf::Text textLabels[5];
+    for(int i = 0; i < 5; ++i) {
         textLabels[i].setFont(font);
         textLabels[i].setCharacterSize(13);
         textLabels[i].setFillColor(sf::Color::Black);
@@ -72,6 +76,7 @@ int main() {
             sliderG.handleEvent(event, window);
             sliderB.handleEvent(event, window);
             sliderA.handleEvent(event, window);
+            sliderT.handleEvent(event, window);
 
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
                 if (btnRect.isClicked(window)) active_tool = RECTANGLE;
@@ -130,10 +135,14 @@ int main() {
         textLabels[3].setString(sliderA.label + ": " + std::to_string(color_A));
         textLabels[3].setPosition(1320.f, 330.f);
 
+        textLabels[4].setString(sliderT.label + ": " + std::to_string(editor.current_thickness));
+        textLabels[4].setPosition(1320.f, 380.f);
+
         sliderR.updateKnobPosition();
         sliderG.updateKnobPosition();
         sliderB.updateKnobPosition();
         sliderA.updateKnobPosition();
+        sliderT.updateKnobPosition();
 
         window.clear(sf::Color(235, 235, 235));
         window.draw(canvas_sprite);
@@ -168,8 +177,9 @@ int main() {
         window.draw(sliderG.track); window.draw(sliderG.knob);
         window.draw(sliderB.track); window.draw(sliderB.knob);
         window.draw(sliderA.track); window.draw(sliderA.knob);
+        window.draw(sliderT.track); window.draw(sliderT.knob);
 
-        for(int i = 0; i < 4; ++i) window.draw(textLabels[i]);
+        for(int i = 0; i < 5; ++i) window.draw(textLabels[i]);
 
         window.draw(btnUndo.box);   window.draw(btnUndo.text);
         window.draw(btnClear.box);  window.draw(btnClear.text);

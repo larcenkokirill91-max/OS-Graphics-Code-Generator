@@ -23,7 +23,9 @@ struct Slider {
         track.setPosition(x, y);
         track.setFillColor(sf::Color(200, 200, 200));
 
+        // Увеличиваем количество точек до 30, чтобы кружочек стал идеально гладким
         knob.setRadius(8.f);
+        knob.setPointCount(30); 
         knob.setOrigin(8.f, 8.f);
         knob.setFillColor(color);
         updateKnobPosition();
@@ -40,7 +42,17 @@ struct Slider {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-            if (knob.getGlobalBounds().contains(mousePos.x, mousePos.y) || 
+            // Создаем расширенную невидимую область клика (хитбокс) вокруг ползунка размером 30x30 пикселей,
+            // чтобы его было очень легко схватить пальцем или мышкой без точного прицеливания
+            float hitboxSize = 30.f;
+            sf::FloatRect extendedBounds(
+                knob.getPosition().x - hitboxSize / 2.f,
+                knob.getPosition().y - hitboxSize / 2.f,
+                hitboxSize,
+                hitboxSize
+            );
+
+            if (extendedBounds.contains(mousePos.x, mousePos.y) || 
                 track.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                 isDragging = true;
             }
