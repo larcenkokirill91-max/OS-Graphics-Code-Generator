@@ -1,22 +1,21 @@
+# Имя исполняемого файла
 TARGET = app
+BUILD_DIR = build
 
-CXX = g++
-CXXFLAGS = -O3 -Wall -Wextra
+# Правило по умолчанию: конфигурируем и собираем проект
+all: $(BUILD_DIR)/Makefile
+	cmake --build $(BUILD_DIR) --config Release
 
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+# Настройка конфигурации CMake (создание файлов сборки в папке build)
+$(BUILD_DIR)/Makefile:
+	cmake -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Release
 
-SRCS = main.cpp
-HEADERS = vector_editor.cpp
+# Запуск скомпилированного приложения
+run: all
+	./$(BUILD_DIR)/$(TARGET)
 
-all: $(TARGET)
-
-$(TARGET): $(SRCS) $(HEADERS)
-	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET) $(LDFLAGS)
-
-run: $(TARGET)
-	./$(TARGET)
-
+# Полная очистка папки сборки и временных кэшей
 clean:
-	rm -f $(TARGET)
+	rm -rf $(BUILD_DIR) $(TARGET) AppDir *.AppImage
 
 .PHONY: all run clean

@@ -1,0 +1,3 @@
+/home/kirill/OS Graphics Code Generator/build/CMakeFiles/app.dir
+/home/kirill/OS Graphics Code Generator/build/CMakeFiles/edit_cache.dir
+/home/kirill/OS Graphics Code Generator/build/CMakeFiles/rebuild_cache.dir
