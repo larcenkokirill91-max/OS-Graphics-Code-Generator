@@ -3,7 +3,6 @@
 #include <string>
 #include <algorithm>
 
-// Старые структуры ползунков (для цвета/толщины)
 struct Slider {
     sf::RectangleShape track;
     sf::CircleShape knob;
@@ -72,7 +71,6 @@ struct Slider {
     }
 };
 
-// Новая структура для классических тонких скроллбаров (вертикального и горизонтального)
 struct ScrollBar {
     sf::RectangleShape track;
     sf::RectangleShape thumb;
@@ -88,11 +86,11 @@ struct ScrollBar {
         maxScrollValue = 0;
 
         track.setPosition(x, y);
-        track.setFillColor(sf::Color(45, 45, 45)); // Тонкая подложка скроллбара
+        track.setFillColor(sf::Color(45, 45, 45));
         
         if (isVertical) {
             track.setSize(sf::Vector2f(10.f, length));
-            thumb.setSize(sf::Vector2f(10.f, 40.f)); // Дефолтный размер ползунка
+            thumb.setSize(sf::Vector2f(10.f, 40.f));
         } else {
             track.setSize(sf::Vector2f(length, 10.f));
             thumb.setSize(sf::Vector2f(40.f, 10.f));
@@ -101,19 +99,18 @@ struct ScrollBar {
         updateThumbPosition();
     }
 
-    // Динамически меняет размер ползунка в зависимости от того, как много текста не влезает
     void updateSize(int contentSize, int viewSize) {
         if (contentSize <= viewSize) {
             maxScrollValue = 0;
             *valuePtr = 0;
-            thumb.setSize(sf::Vector2f(0.f, 0.f)); // Прячем скроллбар, если весь текст влез
+            thumb.setSize(sf::Vector2f(0.f, 0.f));
             return;
         }
         maxScrollValue = contentSize - viewSize;
         
         float viewRatio = (float)viewSize / contentSize;
         float trackLen = isVertical ? track.getSize().y : track.getSize().x;
-        float thumbLen = std::max(20.f, trackLen * viewRatio); // Ползунок не должен быть меньше 20 пикселей
+        float thumbLen = std::max(20.f, trackLen * viewRatio);
 
         if (isVertical) {
             thumb.setSize(sf::Vector2f(10.f, thumbLen));
@@ -142,7 +139,6 @@ struct ScrollBar {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
         if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-            // Расширенный хитбокс клика вокруг скроллбара, чтобы легко хватался мышкой
             sf::FloatRect hitbox = thumb.getGlobalBounds();
             hitbox.left -= 10.f; hitbox.top -= 10.f;
             hitbox.width += 20.f; hitbox.height += 20.f;
