@@ -34,8 +34,30 @@ Developed to prototype and generate pixel-perfect GUI layouts using optimized in
 ### 🚀 Getting Started
 #### 📋 Prerequisites (Fedora Linux)
 Ensure that you have `g++` build essentials and system `SFML` development libraries installed.
+
+* Fedora, Red Hat Enterprise Linux, CentOS Stream, Rocky Linux, AlmaLinux, Oracle Linux, РЕД ОС:
 ```bash
 sudo dnf install gcc-c++ SFML-devel
+```
+
+* Ubuntu / Debian / Linux Mint / Pop!_OS:
+```bash
+sudo apt update && sudo apt install build-essential libsfml-dev
+```
+
+* Arch Linux / Manjaro / EndeavourOS:
+```bash
+sudo pacman -S gcc sfml
+```
+
+* openSUSE:
+```bash
+sudo zypper install gcc-c++ SFML-devel
+```
+
+* macOS
+```bash
+brew install gcc sfml
 ```
 
 #### 📂 Repository File Structure
@@ -49,6 +71,7 @@ sudo dnf install gcc-c++ SFML-devel
 ```
 
 #### 🏗️ Build and Execution
+The repository already includes a pre-built executable file for the app. If it is missing, you can build it using the following commands:
 The project includes a ready-made automated GNU `Makefile`.
 * **Compile and Run immediately:** `make run`
 * **Compile executable (`app`) separately:** `make`
