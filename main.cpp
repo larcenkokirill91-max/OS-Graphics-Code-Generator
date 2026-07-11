@@ -1,9 +1,8 @@
 #include <SFML/Graphics.hpp>
-#include "vector_editor.cpp" // Логика движка
-#include "gui_elements.hpp"  // Элементы интерфейса (Слайдеры, Скроллбары и Кнопки)
+#include "vector_editor.cpp"
+#include "gui_elements.hpp"
 
 int main() {
-    // Включаем аппаратное сглаживание
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;
 
@@ -32,7 +31,6 @@ int main() {
         font.loadFromFile("JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf");
     }
 
-    // Инициализация элементов левой панели управления
     Slider sliderR, sliderG, sliderB, sliderA, sliderT;
     sliderR.init(1320.f, 200.f, 240.f, 0, 255, &color_R, "Red (R)", sf::Color::Red);
     sliderG.init(1320.f, 250.f, 240.f, 0, 255, &color_G, "Green (G)", sf::Color::Green);
@@ -46,35 +44,28 @@ int main() {
     btnUndo.init(1320.f, 480.f, 115.f, 35.f, "Undo", font);
     btnClear.init(1445.f, 480.f, 115.f, 35.f, "Clear", font);
 
-    // Кнопка копирования
     Button btnCopy;
     btnCopy.init(1620.f, 50.f, 260.f, 35.f, "Copy C-Code to Clipboard", font);
 
-    // Главное черное окно для кода (Ширина 260, Высота 840)
     sf::RectangleShape code_panel_background(sf::Vector2f(260.f, 840.f)); 
     code_panel_background.setPosition(1620.f, 110.f);
     code_panel_background.setFillColor(sf::Color(30, 30, 30)); 
     code_panel_background.setOutlineColor(sf::Color(60, 60, 60));
     code_panel_background.setOutlineThickness(1.f);
 
-    // Размещаем вертикальный скроллбара слева от черного окна (X = 1605)
     ScrollBar scrollV, scrollH;
-    scrollV.init(1605.f, 110.f, 840.f, true, &code_scroll_y);  // Слева от окна кода
-    scrollH.init(1620.f, 960.f, 260.f, false, &code_scroll_x); // Снизу под окном кода
+    scrollV.init(1605.f, 110.f, 840.f, true, &code_scroll_y);
+    scrollH.init(1620.f, 960.f, 260.f, false, &code_scroll_x);
 
-    // Настраиваем камеру-вьюпорт для отсечения вылетающего текста
-    // В SFML sf::View принимает (X, Y, Ширина, Высота) внутренней области рендеринга
     sf::View code_view;
-    code_view.setSize(240.f, 820.f); // Размер видимой текстовой зоны внутри черного прямоугольника
+    code_view.setSize(240.f, 820.f);
     
-    // Задаем область вывода на экране в нормализованных координатах [0.0 - 1.0] от всего окна 1920x1024
     code_view.setViewport(sf::FloatRect(1630.f / 1920.f, 120.f / 1024.f, 240.f / 1920.f, 820.f / 1024.f));
 
     sf::Text code_display_text;
     code_display_text.setFont(font);
     code_display_text.setCharacterSize(11);
     code_display_text.setFillColor(sf::Color(210, 210, 210)); 
-    // Внутри вьюпорта локальные координаты текста начинаются с нуля
     code_display_text.setPosition(0.f, 0.f);
 
     sf::Text code_panel_title;
@@ -184,28 +175,21 @@ int main() {
         sliderA.updateKnobPosition();
         sliderT.updateKnobPosition();
 
-        // Берем текст кода и считаем размеры его границ (контента)
         std::string full_code = editor.get_code_string();
         code_display_text.setString(full_code);
         sf::FloatRect textBounds = code_display_text.getLocalBounds();
 
-        // Обновляем размеры ползунков скроллбаров (высота вьюпорта 820, ширина 240)
         scrollV.updateSize((int)textBounds.height + 20, 820);
         scrollH.updateSize((int)textBounds.width + 40, 240);
 
-        // Настраиваем центр камеры-вьюпорта. Камера в SFML позиционируется по центру области.
-        // Смещение code_scroll_x и y двигает камеру, создавая эффект скроллинга текста внутри рамки.
         float centerX = 120.f + code_scroll_x;
         float centerY = 410.f + code_scroll_y;
         code_view.setCenter(centerX, centerY);
 
-        // Начинаем отрисовку кадра
         window.clear(sf::Color(235, 235, 235));
         
-        // Рендерим основной холст
         window.draw(canvas_sprite);
 
-        // Интерактивный предпросмотр при рисовании
         if (is_drawing) {
             if (active_tool == RECTANGLE) {
                 sf::RectangleShape preview_rect(sf::Vector2f(mouse_curr_x - mouse_start_x, mouse_curr_y - mouse_start_y));
@@ -227,10 +211,8 @@ int main() {
             }
         }
 
-        // Сохраняем дефолтную камеру всего приложения
         sf::View default_view = window.getDefaultView();
 
-        // Рендеринг левой панели (в координатах стандартного окна)
         window.draw(panel_title);
         window.draw(btnRect.box);   window.draw(btnRect.text);
         window.draw(btnCircle.box); window.draw(btnCircle.text);
@@ -244,20 +226,15 @@ int main() {
         window.draw(btnUndo.box);   window.draw(btnUndo.text);
         window.draw(btnClear.box);  window.draw(btnClear.text);
 
-        // Рендеринг элементов правой панели (кроме самого текста)
         window.draw(code_panel_title);
         window.draw(btnCopy.box);   window.draw(btnCopy.text);
         window.draw(code_panel_background);
 
-        // === ИЗОЛИРОВАННЫЙ РЕНДЕРИНГ ТЕКСТА КОДА ===
-        // Переключаем окно на камеру-вьюпорт. Теперь всё, что рисуется, маскируется внутри черного окна.
         window.setView(code_view);
         window.draw(code_display_text);
         
-        // Возвращаем стандартную камеру обратно, чтобы скроллбары рисовались поверх в нормальных координатах
         window.setView(default_view);
 
-        // Отрисовка нативных скроллбаров поверх бэкграунда панели кода
         if (scrollV.maxScrollValue > 0) {
             window.draw(scrollV.track);
             window.draw(scrollV.thumb);
