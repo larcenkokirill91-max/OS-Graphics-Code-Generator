@@ -68,6 +68,15 @@ class OsVectorEditor:
         color_btn = ttk.Button(toolbar, text="Выбрать цвет", command=self.choose_color)
         color_btn.pack(side=tk.LEFT, padx=5)
 
+        # === НОВАЯ ПОЛОСКА ДЛЯ АЛЬФА-КАНАЛА (ПРОЗРАЧНОСТИ) ===
+        ttk.Label(toolbar, text=" |  Прозрачность (Alpha): ").pack(side=tk.LEFT)
+        self.alpha_scale = ttk.Scale(toolbar, from_=0, to=255, orient=tk.HORIZONTAL, command=self.update_alpha)
+        self.alpha_scale.set(255)
+        self.alpha_scale.pack(side=tk.LEFT, padx=5)
+        
+        self.alpha_label = ttk.Label(toolbar, text="255")
+        self.alpha_label.pack(side=tk.LEFT, padx=2)
+
         clear_btn = ttk.Button(toolbar, text="Очистить всё", command=self.clear_canvas)
         clear_btn.pack(side=tk.RIGHT)
 
@@ -108,6 +117,11 @@ class OsVectorEditor:
             self.current_rgb = tuple(map(int, color_code[0])) 
             self.current_hex = color_code[1]
             self.color_preview.config(bg=self.current_hex)
+
+    def update_alpha(self, val):
+        """Обновляет текущее значение альфа-канала при изменении ползунка"""
+        self.current_alpha = int(float(val))
+        self.alpha_label.config(text=str(self.current_alpha))
 
     def update_code_text(self):
         """Полностью перезаписывает текстовое поле на основе сохраненного списка фигур"""
