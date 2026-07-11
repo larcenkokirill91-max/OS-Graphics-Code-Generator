@@ -3,11 +3,12 @@
 #include "gui_elements.hpp"  // Элементы интерфейса (Слайдеры и Кнопки)
 
 int main() {
-    // Включаем аппаратное сглаживание (Anti-Aliasing) уровня 4x MSAA для оконных элементов
+    // Включаем аппаратное сглаживание
     sf::ContextSettings settings;
     settings.antialiasingLevel = 4;
 
-    sf::RenderWindow window(sf::VideoMode(1600, 1024), "OS Graphics Code Generator (C++ Speed Edition)", sf::Style::Default, settings);
+    // Увеличили ширину окна до 1920, чтобы сделать его прямоугольным и вместить код
+    sf::RenderWindow window(sf::VideoMode(1920, 1024), "OS Graphics Code Generator (C++ Speed Edition)", sf::Style::Default, settings);
     window.setFramerateLimit(60);
 
     OsVectorEditor editor;
@@ -24,13 +25,12 @@ int main() {
     int mouse_start_x = 0, mouse_start_y = 0;
     int mouse_curr_x = 0, mouse_curr_y = 0;
 
-    // Загружаем локальный шрифт из вашей папки
     sf::Font font;
     if (!font.loadFromFile("JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf")) {
         font.loadFromFile("JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf");
     }
 
-    // Инициализация элементов интерфейса
+    // Инициализация элементов интерфейса панели управления
     Slider sliderR, sliderG, sliderB, sliderA, sliderT;
     sliderR.init(1320.f, 200.f, 240.f, 0, 255, &color_R, "Red (R)", sf::Color::Red);
     sliderG.init(1320.f, 250.f, 240.f, 0, 255, &color_G, "Green (G)", sf::Color::Green);
@@ -44,12 +44,35 @@ int main() {
     btnUndo.init(1320.f, 480.f, 115.f, 35.f, "Undo", font);
     btnClear.init(1445.f, 480.f, 115.f, 35.f, "Clear", font);
 
+    // === НОВЫЕ ЭЛЕМЕНТЫ ДЛЯ ПАНЕЛИ ВЫВОДА КОДА ===
+    Button btnCopy;
+    btnCopy.init(1620.f, 50.f, 260.f, 35.f, "Copy C-Code to Clipboard", font);
+
+    sf::RectangleShape code_panel_background(sf::Vector2f(280.f, 880.f));
+    code_panel_background.setPosition(1620.f, 110.f);
+    code_panel_background.setFillColor(sf::Color(30, 30, 30)); // Темная тема для кода
+    code_panel_background.setOutlineColor(sf::Color(60, 60, 60));
+    code_panel_background.setOutlineThickness(1.f);
+
+    sf::Text code_display_text;
+    code_display_text.setFont(font);
+    code_display_text.setCharacterSize(11);
+    code_display_text.setFillColor(sf::Color(210, 210, 210)); // Светлый текст на темном фоне
+    code_display_text.setPosition(1630.f, 125.f);
+
+    sf::Text code_panel_title;
+    code_panel_title.setFont(font);
+    code_panel_title.setString("GENERATED C-CODE");
+    code_panel_title.setCharacterSize(16);
+    code_panel_title.setFillColor(sf::Color(50, 50, 50));
+    code_panel_title.setPosition(1620.f, 15.f);
+
+    // Элементы старой панели
     sf::RectangleShape color_preview_box(sf::Vector2f(240.f, 30.f));
     color_preview_box.setPosition(1320.f, 120.f);
     color_preview_box.setOutlineColor(sf::Color::Black);
     color_preview_box.setOutlineThickness(1.f);
 
-    // Массив из 5 отдельных текстовых объектов для подписей слайдеров
     sf::Text textLabels[5];
     for(int i = 0; i < 5; ++i) {
         textLabels[i].setFont(font);
@@ -91,6 +114,16 @@ int main() {
                     canvas_texture.update(editor.canvas_pixels);
                     editor.print_c_code();
                 }
+                // Логика кнопки Copy: берем строку из движка и кидаем в буфер обмена системы
+                if (btnCopy.isClicked(window)) {
+                    sf::Clipboard::setString(editor.get_code_string());
+                    btnCopy.box.setFillColor(sf::Color(120, 230, 120)); // Подсвечиваем зеленым при успешном копировании
+                }
+            }
+
+            // Возвращаем дефолтный цвет кнопки копирования, когда мышку отпустили
+            if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                btnCopy.box.setFillColor(sf::Color(240, 240, 240));
             }
 
             if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
@@ -125,16 +158,12 @@ int main() {
 
         textLabels[0].setString(sliderR.label + ": " + std::to_string(color_R));
         textLabels[0].setPosition(1320.f, 180.f);
-        
         textLabels[1].setString(sliderG.label + ": " + std::to_string(color_G));
         textLabels[1].setPosition(1320.f, 230.f);
-        
         textLabels[2].setString(sliderB.label + ": " + std::to_string(color_B));
         textLabels[2].setPosition(1320.f, 280.f);
-        
         textLabels[3].setString(sliderA.label + ": " + std::to_string(color_A));
         textLabels[3].setPosition(1320.f, 330.f);
-
         textLabels[4].setString(sliderT.label + ": " + std::to_string(editor.current_thickness));
         textLabels[4].setPosition(1320.f, 380.f);
 
@@ -143,6 +172,9 @@ int main() {
         sliderB.updateKnobPosition();
         sliderA.updateKnobPosition();
         sliderT.updateKnobPosition();
+
+        // Обновляем текст в блоке вывода кода на экране на основе текущих фигур
+        code_display_text.setString(editor.get_code_string());
 
         window.clear(sf::Color(235, 235, 235));
         window.draw(canvas_sprite);
@@ -168,21 +200,25 @@ int main() {
             }
         }
 
+        // Рендеринг левой панели инструментов
         window.draw(panel_title);
         window.draw(btnRect.box);   window.draw(btnRect.text);
         window.draw(btnCircle.box); window.draw(btnCircle.text);
         window.draw(color_preview_box);
-        
         window.draw(sliderR.track); window.draw(sliderR.knob);
         window.draw(sliderG.track); window.draw(sliderG.knob);
         window.draw(sliderB.track); window.draw(sliderB.knob);
         window.draw(sliderA.track); window.draw(sliderA.knob);
         window.draw(sliderT.track); window.draw(sliderT.knob);
-
         for(int i = 0; i < 5; ++i) window.draw(textLabels[i]);
-
         window.draw(btnUndo.box);   window.draw(btnUndo.text);
         window.draw(btnClear.box);  window.draw(btnClear.text);
+
+        // Рендеринг новой панели кода справа
+        window.draw(code_panel_title);
+        window.draw(btnCopy.box);   window.draw(btnCopy.text);
+        window.draw(code_panel_background);
+        window.draw(code_display_text);
 
         window.display();
     }

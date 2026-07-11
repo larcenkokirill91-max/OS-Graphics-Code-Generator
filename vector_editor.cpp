@@ -215,18 +215,24 @@ public:
         redraw_all();
     }
 
+    std::string get_code_string() {
+        std::ostringstream ss;
+        ss << "// === ПРОТОТИПЫ ФУНКЦИЙ ВАШЕЙ ОС ===\n"
+           << "// void draw_pixel(UINT32 x, UINT32 y, UINT8 r, UINT8 g, UINT8 b, UINT8 alpha);\n"
+           << "// void draw_rect(UINT32 x, UINT32 y, UINT32 w, UINT32 h, UINT8 r, UINT8 g, UINT8 b, UINT8 alpha);\n"
+           << "// void draw_circle(UINT32 center_x, UINT32 center_y, UINT32 rad, UINT8 r, UINT8 g, UINT8 b, UINT8 a);\n\n"
+           << "#define SCREEN_WIDTH  " << CANVAS_WIDTH << "\n"
+           << "#define SCREEN_HEIGHT " << CANVAS_HEIGHT << "\n\n"
+           << "void render_os_vector_graphics() {\n";
+        for (const auto& shape : shapes_history) {
+            ss << "    " << shape.c_code << "\n";
+        }
+        ss << "}\n";
+        return ss.str();
+    }
+
     void print_c_code() {
         std::system("cls || clear");
-        std::cout << "// === ПРОТОТИПЫ ФУНКЦИЙ ВАШЕЙ ОС ===\n"
-                  << "// void draw_pixel(UINT32 x, UINT32 y, UINT8 r, UINT8 g, UINT8 b, UINT8 alpha);\n"
-                  << "// void draw_rect(UINT32 x, UINT32 y, UINT32 w, UINT32 h, UINT8 r, UINT8 g, UINT8 b, UINT8 alpha);\n"
-                  << "// void draw_circle(UINT32 center_x, UINT32 center_y, UINT32 rad, UINT8 r, UINT8 g, UINT8 b, UINT8 a);\n\n"
-                  << "#define SCREEN_WIDTH  " << CANVAS_WIDTH << "\n"
-                  << "#define SCREEN_HEIGHT " << CANVAS_HEIGHT << "\n\n"
-                  << "void render_os_vector_graphics() {\n";
-        for (const auto& shape : shapes_history) {
-            std::cout << "    " << shape.c_code << "\n";
-        }
-        std::cout << "}\n";
+        std::cout << get_code_string();
     }
 };
