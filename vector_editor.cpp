@@ -54,6 +54,7 @@ private:
                 pixels[idx]     = (sf::Uint8)(color.r * alpha + pixels[idx]     * inv_alpha);
                 pixels[idx + 1] = (sf::Uint8)(color.g * alpha + pixels[idx + 1] * inv_alpha);
                 pixels[idx + 2] = (sf::Uint8)(color.b * alpha + pixels[idx + 2] * inv_alpha);
+                pixels[idx + 3] = (sf::Uint8)(255 * alpha + pixels[idx + 3] * inv_alpha);
             }
         }
     }
@@ -103,6 +104,7 @@ private:
                         pixels[idx]     = (sf::Uint8)(src_color.r * alpha + pixels[idx]     * inv_alpha);
                         pixels[idx + 1] = (sf::Uint8)(src_color.g * alpha + pixels[idx + 1] * inv_alpha);
                         pixels[idx + 2] = (sf::Uint8)(src_color.b * alpha + pixels[idx + 2] * inv_alpha);
+                        pixels[idx + 3] = (sf::Uint8)(255 * alpha + pixels[idx + 3] * inv_alpha);
                     }
                 }
             }
@@ -137,11 +139,12 @@ public:
     }
 
     void redraw_all() {
+        // Заполняем фон текстуры дефолтным серым цветом #F0F0F0, полностью обнуляя альфу для прозрачного блендинга
         for (unsigned int i = 0; i < CANVAS_WIDTH * CANVAS_HEIGHT * 4; i += 4) {
             canvas_pixels[i]     = 240;
             canvas_pixels[i + 1] = 240;
             canvas_pixels[i + 2] = 240;
-            canvas_pixels[i + 3] = 255;
+            canvas_pixels[i + 3] = 0; 
         }
 
         for (const auto& shape : shapes_history) {
@@ -152,6 +155,18 @@ public:
                 int center_y = (shape.y1 + shape.y2) / 2;
                 int rad = (std::abs(shape.x1 - shape.x2) + std::abs(shape.y1 - shape.y2)) / 4;
                 draw_aa_circle_fast(canvas_pixels, center_x, center_y, rad, shape.color);
+            }
+        }
+
+        // Накладываем итоговый буфер на непрозрачную подложку, чтобы SFML корректно отображал окно
+        for (unsigned int i = 0; i < CANVAS_WIDTH * CANVAS_HEIGHT * 4; i += 4) {
+            if (canvas_pixels[i + 3] < 255) {
+                float alpha = canvas_pixels[i + 3] / 255.0f;
+                float inv_alpha = 1.0f - alpha;
+                canvas_pixels[i]     = (sf::Uint8)(canvas_pixels[i] * alpha + 240 * inv_alpha);
+                canvas_pixels[i + 1] = (sf::Uint8)(canvas_pixels[i + 1] * alpha + 240 * inv_alpha);
+                canvas_pixels[i + 2] = (sf::Uint8)(canvas_pixels[i + 2] * alpha + 240 * inv_alpha);
+                canvas_pixels[i + 3] = 255;
             }
         }
     }

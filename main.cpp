@@ -20,27 +20,32 @@ int main() {
     int mouse_start_x = 0, mouse_start_y = 0;
     int mouse_curr_x = 0, mouse_curr_y = 0;
 
+    // Загружаем ваш локальный шрифт из указанной папки
     sf::Font font;
-    font.loadFromFile("arial.ttf"); 
+    if (!font.loadFromFile("JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf")) {
+        // Запасной вариант на всякий случай, если папка называется иначе
+        font.loadFromFile("JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf");
+    }
 
     // Инициализация элементов интерфейса из gui_elements.hpp
     Slider sliderR, sliderG, sliderB, sliderA;
-    sliderR.init(1320.f, 200.f, 240.f, 0, 255, &color_R, "Красный (R)", sf::Color::Red);
-    sliderG.init(1320.f, 250.f, 240.f, 0, 255, &color_G, "Зеленый (G)", sf::Color::Green);
-    sliderB.init(1320.f, 300.f, 240.f, 0, 255, &color_B, "Синий (B)", sf::Color::Blue);
-    sliderA.init(1320.f, 350.f, 240.f, 0, 255, &color_A, "Прозрачность (Alpha)", sf::Color(100, 100, 100));
+    sliderR.init(1320.f, 200.f, 240.f, 0, 255, &color_R, "Red (R)", sf::Color::Red);
+    sliderG.init(1320.f, 250.f, 240.f, 0, 255, &color_G, "Green (G)", sf::Color::Green);
+    sliderB.init(1320.f, 300.f, 240.f, 0, 255, &color_B, "Blue (B)", sf::Color::Blue);
+    sliderA.init(1320.f, 350.f, 240.f, 0, 255, &color_A, "Alpha", sf::Color(100, 100, 100));
 
     Button btnRect, btnCircle, btnUndo, btnClear;
-    btnRect.init(1320.f, 50.f, 115.f, 35.f, "Прямоугольник", font);
-    btnCircle.init(1445.f, 50.f, 115.f, 35.f, "Круг", font);
-    btnUndo.init(1320.f, 430.f, 115.f, 35.f, "Отменить", font);
-    btnClear.init(1445.f, 430.f, 115.f, 35.f, "Очистить", font);
+    btnRect.init(1320.f, 50.f, 115.f, 35.f, "Rectangle", font);
+    btnCircle.init(1445.f, 50.f, 115.f, 35.f, "Circle", font);
+    btnUndo.init(1320.f, 430.f, 115.f, 35.f, "Undo", font);
+    btnClear.init(1445.f, 430.f, 115.f, 35.f, "Clear", font);
 
     sf::RectangleShape color_preview_box(sf::Vector2f(240.f, 30.f));
     color_preview_box.setPosition(1320.f, 120.f);
     color_preview_box.setOutlineColor(sf::Color::Black);
     color_preview_box.setOutlineThickness(1.f);
 
+    // Массив из 4 отдельных текстовых объектов для подписей слайдеров
     sf::Text textLabels[4];
     for(int i = 0; i < 4; ++i) {
         textLabels[i].setFont(font);
@@ -50,7 +55,7 @@ int main() {
 
     sf::Text panel_title;
     panel_title.setFont(font);
-    panel_title.setString("ИНСТРУМЕНТЫ И ЦВЕТ");
+    panel_title.setString("TOOLS & COLOR");
     panel_title.setCharacterSize(16);
     panel_title.setFillColor(sf::Color(50, 50, 50));
     panel_title.setPosition(1320.f, 15.f);
@@ -115,10 +120,13 @@ int main() {
 
         textLabels[0].setString(sliderR.label + ": " + std::to_string(color_R));
         textLabels[0].setPosition(1320.f, 180.f);
+        
         textLabels[1].setString(sliderG.label + ": " + std::to_string(color_G));
         textLabels[1].setPosition(1320.f, 230.f);
+        
         textLabels[2].setString(sliderB.label + ": " + std::to_string(color_B));
         textLabels[2].setPosition(1320.f, 280.f);
+        
         textLabels[3].setString(sliderA.label + ": " + std::to_string(color_A));
         textLabels[3].setPosition(1320.f, 330.f);
 
