@@ -14,7 +14,7 @@ enum Tool { RECTANGLE, CIRCLE };
 struct ShapeData {
     Tool type;
     int x1, y1, x2, y2;
-    int thickness; // 0 - сплошная, >0 - толщина обводки
+    int thickness;
     sf::Color color;
     std::string c_code;
 };
@@ -32,7 +32,6 @@ private:
             ss << "draw_rect(" << x << ", " << y << ", " << w << ", " << h << ", "
                << (int)shape.color.r << ", " << (int)shape.color.g << ", " << (int)shape.color.b << ", " << (int)shape.color.a << ");";
                
-            // Если есть толщина контура, генерируем вырез цвета фона
             if (shape.thickness > 0 && w > shape.thickness * 2 && h > shape.thickness * 2) {
                 ss << "\n    draw_rect(" << x + shape.thickness << ", " << y + shape.thickness << ", " 
                    << w - shape.thickness * 2 << ", " << h - shape.thickness * 2 << ", 240, 240, 240, 255);";
@@ -45,7 +44,6 @@ private:
             ss << "draw_circle(" << center_x << ", " << center_y << ", " << rad << ", "
                << (int)shape.color.r << ", " << (int)shape.color.g << ", " << (int)shape.color.b << ", " << (int)shape.color.a << ");";
                
-            // Если есть толщина контура, генерируем внутренний вырез радиусом поменьше
             if (shape.thickness > 0 && rad > shape.thickness) {
                 ss << "\n    draw_circle(" << center_x << ", " << center_y << ", " 
                    << rad - shape.thickness << ", 240, 240, 240, 255);";
@@ -129,11 +127,11 @@ private:
 public:
     std::vector<ShapeData> shapes_history;
     sf::Uint8* canvas_pixels;
-    int current_thickness; // Сюда будем привязывать новый ползунок из GUI
+    int current_thickness;
 
     OsVectorEditor() {
         canvas_pixels = new sf::Uint8[CANVAS_WIDTH * CANVAS_HEIGHT * 4];
-        current_thickness = 0; // По умолчанию фигуры сплошные
+        current_thickness = 0;
         clear();
     }
 
@@ -165,11 +163,9 @@ public:
         }
 
         for (const auto& shape : shapes_history) {
-            // 1. Рисуем внешнюю сплошную фигуру
             if (shape.type == RECTANGLE) {
                 draw_rect_fast(canvas_pixels, shape.x1, shape.y1, shape.x2, shape.y2, shape.color);
                 
-                // Если задана толщина контура, поверх накладываем вырез цвета фона #F0F0F0
                 int w = std::abs(shape.x1 - shape.x2);
                 int h = std::abs(shape.y1 - shape.y2);
                 if (shape.thickness > 0 && w > shape.thickness * 2 && h > shape.thickness * 2) {
@@ -184,7 +180,6 @@ public:
                 int rad = (std::abs(shape.x1 - shape.x2) + std::abs(shape.y1 - shape.y2)) / 4;
                 draw_aa_circle_fast(canvas_pixels, center_x, center_y, rad, shape.color);
                 
-                // Если задана толщина, накладываем сглаженный внутренний вырез цвета фона
                 if (shape.thickness > 0 && rad > shape.thickness) {
                     draw_aa_circle_fast(canvas_pixels, center_x, center_y, rad - shape.thickness, sf::Color(240, 240, 240, 255));
                 }
@@ -217,7 +212,7 @@ public:
 
     std::string get_code_string() {
         std::ostringstream ss;
-        ss << "// === ПРОТОТИПЫ ФУНКЦИЙ ВАШЕЙ ОС ===\n"
+        ss << "// --- PROTOTYPES OF YOUR OS FUNCTIONS ---\n"
            << "// void draw_pixel(UINT32 x, UINT32 y, UINT8 r, UINT8 g, UINT8 b, UINT8 alpha);\n"
            << "// void draw_rect(UINT32 x, UINT32 y, UINT32 w, UINT32 h, UINT8 r, UINT8 g, UINT8 b, UINT8 alpha);\n"
            << "// void draw_circle(UINT32 center_x, UINT32 center_y, UINT32 rad, UINT8 r, UINT8 g, UINT8 b, UINT8 a);\n\n"
