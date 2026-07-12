@@ -6,8 +6,9 @@
 #include <algorithm>
 #include <iostream>
 
-const unsigned int CANVAS_WIDTH = 1280;
-const unsigned int CANVAS_HEIGHT = 1024;
+// Теперь размеры холста задаются динамически при старте приложения
+extern unsigned int CANVAS_WIDTH;
+extern unsigned int CANVAS_HEIGHT;
 
 enum Tool { RECTANGLE, CIRCLE };
 
@@ -130,13 +131,19 @@ public:
     int current_thickness;
 
     OsVectorEditor() {
-        canvas_pixels = new sf::Uint8[CANVAS_WIDTH * CANVAS_HEIGHT * 4];
+        canvas_pixels = nullptr;
         current_thickness = 0;
+    }
+
+    // Инициализация выделения памяти после выбора разрешения экрана
+    void init_canvas() {
+        if (canvas_pixels) delete[] canvas_pixels;
+        canvas_pixels = new sf::Uint8[CANVAS_WIDTH * CANVAS_HEIGHT * 4];
         clear();
     }
 
     ~OsVectorEditor() {
-        delete[] canvas_pixels;
+        if (canvas_pixels) delete[] canvas_pixels;
     }
 
     void add_shape(Tool tool, int x1, int y1, int x2, int y2, sf::Color color) {
@@ -155,6 +162,8 @@ public:
     }
 
     void redraw_all() {
+        if (!canvas_pixels) return;
+
         for (unsigned int i = 0; i < CANVAS_WIDTH * CANVAS_HEIGHT * 4; i += 4) {
             canvas_pixels[i]     = 240;
             canvas_pixels[i + 1] = 240;
