@@ -29,7 +29,7 @@ Developed to prototype and generate pixel-perfect GUI layouts using optimized in
 ### 🛠 Tech Stack
 * **Language:** C++17 (Optimized `-O3` architecture)
 * **Framework:** SFML (Simple and Fast Multimedia Library)
-* **Target OS Resolution:** Native 1280x1024 Workspace layout inside a flexible 1920x1024 rectangular application wrapper.
+* **Target OS Resolution:** Dinamic Workspace layout inside a flexible 1920x1024 rectangular application wrapper.
 
 ### 🚀 Getting Started
 #### 📋 Prerequisites (Fedora Linux)
@@ -105,7 +105,7 @@ The project includes a ready-made automated GNU `Makefile`.
 ### 🛠 Технологический стек
 * **Язык программирования:** C++17 (с флагами максимальной оптимизации скорости `-O3`)
 * **Графическая библиотека:** SFML (Simple and Fast Multimedia Library)
-* **Целевое разрешение холста ОС:** Фиксированное 1280x1024 внутри прямоугольного окна приложения размером 1920x1024.
+* **Целевое разрешение холста ОС:** Динамическое внутри прямоугольного окна приложения размером 1920x1024.
 
 ### 🚀 С чего начать
 #### 📋 Предварительные требования (Fedora Linux)
